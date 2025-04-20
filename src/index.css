@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4;
+  }
+
+  .button-primary {
+    @apply px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .button-secondary {
+    @apply px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-200 
+           focus:outline-none focus:ring-2 focus:ring-blue-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .select {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-200 
+           focus:outline-none focus:ring-2 focus:ring-blue-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-blue {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .badge-green {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-yellow {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-red {
+    @apply bg-red-100 text-red-800;
+  }
+}
+
+/* Custom scrollbar */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+  }
+}
+
+/* Loading animation */
+.loading {
+  @apply animate-pulse;
+}
+
+/* Mobile menu transition */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 100ms ease-out, transform 100ms ease-out;
+}
+
+.mobile-menu-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mobile-menu-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 100ms ease-in, transform 100ms ease-in;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 200ms ease-in, transform 200ms ease-in;
+}
