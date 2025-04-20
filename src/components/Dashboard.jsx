@@ -24,6 +24,7 @@ const Dashboard = ({
   setActiveTab // Add this prop to allow changing tabs
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGuide, setShowGuide] = useState(true);
 
   // Navigation methods for quick actions
   const handleAddAssignment = () => {
@@ -66,7 +67,7 @@ const Dashboard = ({
   });
 
   const upcomingAssignments = assignments
-    .filter((assignment) => assignment.status == 'completed' && new Date(assignment.due_date) > today)
+    .filter((assignment) => new Date(assignment.due_date) > today)
     .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
     .slice(0, 3);
 
@@ -96,36 +97,38 @@ const Dashboard = ({
     return isPremium;
   };
 
-  // Quick actions
-  const quickActions = [
-    {
-      id: 'add-assignment',
-      title: 'Add Assignment',
-      icon: <Plus className="h-4 w-4" />,
-      action: () => navigate('/assignments/new')
-    },
-    {
-      id: 'search-notes',
-      title: 'Search Notes',
-      icon: <Search className="h-4 w-4" />,
-      action: () => navigate('/notes/search')
-    },
-    {
-      id: 'view-progress',
-      title: 'View Progress',
-      icon: <BarChart2 className="h-4 w-4" />,
-      action: () => navigate('/progress')
-    },
-    {
-      id: 'set-reminder',
-      title: 'Set Reminder',
-      icon: <Bell className="h-4 w-4" />,
-      action: () => navigate('/reminders')
-    }
-  ];
-
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* Quick Guide Modal */}
+      {showGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setShowGuide(false)}
+              aria-label="Close Guide"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-semibold mb-2">Welcome to your Dashboard!</h2>
+            <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
+              <li>View your <b>assignments</b>, <b>classes</b>, and <b>events</b> at a glance.</li>
+              <li>Switch tabs to see <b>Today's</b>, <b>Upcoming</b>, or <b>All</b> activities.</li>
+              <li>Add new assignments, classes, or events from their respective sections.</li>
+              <li>Track your study streak and progress.</li>
+              <li>Use the search bar to quickly find what you need.</li>
+            </ul>
+            <div className="mt-4 text-right">
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={() => setShowGuide(false)}
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Mobile Search Bar */}
       <div className="block md:hidden">
         <div className="relative">
@@ -137,25 +140,6 @@ const Dashboard = ({
             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
           <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-        </div>
-      </div>
-
-      {/* Quick Actions - Mobile Scrollable */}
-      <div className="block md:hidden">
-        <h2 className="text-sm font-medium mb-2 text-gray-700">Quick Actions</h2>
-        <div className="flex overflow-x-auto pb-2 space-x-2 scrollbar-hide">
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              onClick={action.action}
-              className="flex-shrink-0 flex flex-col items-center justify-center bg-white rounded-lg shadow p-3 border border-gray-100 min-w-[80px]"
-            >
-              <div className="p-2 rounded-full bg-blue-50 mb-1">
-                {action.icon}
-              </div>
-              <span className="text-xs text-gray-700">{action.title}</span>
-            </button>
-          ))}
         </div>
       </div>
 
@@ -337,30 +321,6 @@ const Dashboard = ({
                   <p className="text-xs text-gray-500">Study Streak</p>
                   <p className="text-base md:text-lg font-semibold">{studyStreak} days</p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Quick Actions */}
-          <div className="hidden md:block">
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h2 className="text-base font-medium mb-3 text-gray-700 flex items-center">
-                <Plus className="mr-2 h-4 w-4 text-blue-500" />
-                Quick Actions
-              </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {quickActions.map((action) => (
-                  <button
-                    key={action.id}
-                    onClick={action.action}
-                    className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="p-2 rounded-full bg-blue-50 mr-3">
-                      {action.icon}
-                    </div>
-                    <span className="text-sm text-gray-700">{action.title}</span>
-                  </button>
-                ))}
               </div>
             </div>
           </div>
