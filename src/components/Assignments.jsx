@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { supabase } from '../services/supabaseClient';
 import { toast } from 'react-hot-toast';
+
+// Define Assignment type for better type safety
+const AssignmentPropTypes = {
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    course: PropTypes.string.isRequired,
+    due_date: PropTypes.string.isRequired,
+    priority: PropTypes.oneOf(['high', 'medium', 'low']).isRequired,
+    status: PropTypes.oneOf(['not-started', 'pending', 'in-progress', 'completed']).isRequired
+};
 
 const Assignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -12,6 +23,23 @@ const Assignments = () => {
         status: 'not-started'
     });
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    // Define prop types for assignments
+    Assignments.propTypes = {
+        initialAssignments: PropTypes.arrayOf(PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            title: PropTypes.string.isRequired,
+            course: PropTypes.string.isRequired,
+            due_date: PropTypes.string.isRequired,
+            priority: PropTypes.oneOf(['high', 'medium', 'low']).isRequired,
+            status: PropTypes.oneOf(['not-started', 'pending', 'in-progress', 'completed']).isRequired
+        }))
+    };
+
+    // Default props
+    Assignments.defaultProps = {
+        initialAssignments: []
+    };
 
     useEffect(() => {
         fetchAssignments();
@@ -26,7 +54,20 @@ const Assignments = () => {
 
             if (error) throw error;
 
-            setAssignments(data || []);
+            // Validate data against prop types
+            const validAssignments = data?.filter(assignment => {
+                const isValid = (
+                    typeof assignment.id === 'number' &&
+                    typeof assignment.title === 'string' &&
+                    typeof assignment.course === 'string' &&
+                    typeof assignment.due_date === 'string' &&
+                    ['high', 'medium', 'low'].includes(assignment.priority) &&
+                    ['not-started', 'pending', 'in-progress', 'completed'].includes(assignment.status)
+                );
+                return isValid;
+            }) || [];
+
+            setAssignments(validAssignments);
         } catch (error) {
             toast(`Error fetching assignments: ${error.message}`);
         }
@@ -34,6 +75,11 @@ const Assignments = () => {
 
     const updateAssignmentStatus = async (id, newStatus) => {
         try {
+            // Validate newStatus against allowed values
+            if (!['not-started', 'pending', 'in-progress', 'completed'].includes(newStatus)) {
+                throw new Error('Invalid status');
+            }
+
             const { data, error } = await supabase
                 .from('assignments')
                 .update({ status: newStatus })

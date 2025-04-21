@@ -13,14 +13,19 @@ class NotificationService {
   }
 
   // Request notification permission
-  async requestPermission() {
+  async requestPermission(triggerByUser = false) {
     if (!this.isSupported) {
       console.warn('Notifications not supported');
       return false;
     }
 
-    const permission = await Notification.requestPermission();
-    return permission === 'granted';
+    // Only request permission if triggered by user or no previous decision
+    if (triggerByUser || Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+
+    return Notification.permission === 'granted';
   }
 
   // Register service worker

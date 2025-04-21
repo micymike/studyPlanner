@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 import { 
   Clock, Calendar, CheckSquare, 
   Brain, Search, Plus, Loader2, BarChart2, 
-  BookMarked, Bell, ChevronRight
+  BookMarked, Bell, ChevronRight, Star
 } from 'lucide-react';
 
 
@@ -260,6 +260,19 @@ const Dashboard = ({
                 >
                   Add Event
                 </button>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors group">
+                <div className="p-2 rounded-full bg-purple-100 inline-block mb-2">
+                  <Star className="h-5 w-5 text-purple-600 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-semibold text-purple-800 mb-2">Explore Features</h3>
+                <p className="text-sm text-purple-700 mb-3">Discover new tools to enhance your learning experience.</p>
+                <Link 
+                  to="/features" 
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-block"
+                >
+                  View Features
+                </Link>
               </div>
             </div>
             

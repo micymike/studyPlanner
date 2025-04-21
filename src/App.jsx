@@ -1,15 +1,19 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import Dashboard from './components/Dashboard';
 import CalendarView from './components/Calendar';
 import Timetable from './components/Timetable';
 import Assignments from './components/Assignments';
-import { CalendarDays, BookOpen, CheckSquare, LayoutDashboard } from 'lucide-react';
+import Features from './pages/Features';
+import Sidebar from './components/Sidebar';
+import { LayoutDashboard, Menu, Calendar, BookOpen, Star } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import NotificationService from './services/notificationService.jsx';
 
 function App() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [classes, setClasses] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -18,17 +22,19 @@ function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   useEffect(() => {
-    // Initialize notifications
+    // Initialize notifications only when user explicitly allows
     const initNotifications = async () => {
       if (NotificationService.isNotificationSupported()) {
+        console.log('Notification service is supported');
         await NotificationService.registerServiceWorker();
-        const permissionGranted = await NotificationService.requestPermission();
-        
-        if (permissionGranted) {
-          console.log('Notifications are enabled');
-        }
       }
     };
 
@@ -43,9 +49,9 @@ function App() {
 
       // Parallel data fetching with comprehensive error handling
       const [classesResult, assignmentsResult, eventsResult] = await Promise.all([
-        supabase.from('class_sessions').select('*'),
-        supabase.from('assignments').select('*'),
-        supabase.from('events').select('*')
+        supabase().from('class_sessions').select('*'),
+        supabase().from('assignments').select('*'),
+        supabase().from('events').select('*')
       ]);
 
       // Collect and log any errors
@@ -240,10 +246,30 @@ function App() {
   }, []);
 
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'calendar', label: 'Calendar', icon: CalendarDays },
-    { id: 'timetable', label: 'Timetable', icon: BookOpen },
-    { id: 'assignments', label: 'Assignments', icon: CheckSquare },
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard, 
+      path: '/dashboard' 
+    },
+    { 
+      id: 'calendar', 
+      label: 'Calendar', 
+      icon: Calendar, 
+      path: '/calendar' 
+    },
+    { 
+      id: 'assignments', 
+      label: 'Assignments', 
+      icon: BookOpen, 
+      path: '/assignments' 
+    },
+    { 
+      id: 'features', 
+      label: 'Features', 
+      icon: Star, 
+      path: '/features' 
+    }
   ];
 
   // Loading state with improved spinner and message
@@ -311,68 +337,145 @@ function App() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8"> {/* Adjusted padding */}
         {/* Responsive Tab Navigation */}
-        <div className="mb-6 md:mb-8"> {/* Adjusted margin */}
-          <div className="flex flex-col md:flex-row md:space-x-1 bg-gray-100 p-1 rounded-xl">
+        <div className="mb-6 md:mb-8 relative"> {/* Adjusted margin */}
+          {/* Mobile Menu Button - Only visible on small screens */}
+          <div className="sm:hidden flex justify-end mb-2">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none"
+            >
+              <Menu className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
+          
+          {/* Desktop Tab Navigation - Hidden on mobile */}
+          <div className="hidden md:flex flex-row space-x-1 bg-gray-100 p-1 rounded-xl">
             {tabs.map(tab => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    navigate(tab.path);
+                  }}
                   className={`flex items-center justify-center md:justify-start space-x-2 px-4 py-2 rounded-lg flex-1 text-sm md:text-base ${ // Centered items vertically, adjusted text size
                     activeTab === tab.id
                       ? 'bg-white shadow-sm text-indigo-600 font-medium' // Added font-medium
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200' // Added hover background
-                  } ${
-                    // Add margin between vertical tabs
-                    'mb-1 md:mb-0' 
                   }`} // Corrected template literal closing
                 >
                   <Icon size={20} />
-                  <span className="hidden md:inline">{tab.label}</span> {/* Hide label on small screens */}
+                  <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
+        {/* Full-screen Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 bg-white overflow-hidden">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <h2 className="text-xl font-bold text-gray-800">Navigation</h2>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+                >
+                  <X className="h-6 w-6 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="divide-y">
+                  {[...tabs, { id: 'features', label: 'Features', icon: Star, path: '/features' }].map(tab => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setIsMobileMenuOpen(false);
+                          navigate(tab.path || '/');
+
+                        }}
+                        className={`w-full text-left p-4 flex items-center space-x-4 text-lg ${
+                          activeTab === tab.id 
+                            ? 'bg-indigo-50 text-indigo-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Icon className="h-6 w-6" />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t text-center text-gray-500">
+                StudyPlanner Mobile
+              </div>
+            </div>
+          </div>
+        )}
+
         <main>
-          {activeTab === 'dashboard' && (
-            <Dashboard
-              assignments={assignments}
-              classes={classes}
-              events={events}
-              isPremium={isPremium}
-              onPremiumUpgrade={handlePremiumUpgrade}
-              onAddAssignment={addAssignment}
-              onAddClass={addClassSession}
-              onAddEvent={addEvent}
-              setActiveTab={setActiveTab}
-            />
-          )}
-          {activeTab === 'calendar' && (
-            <CalendarView
-              events={events}
-              // setEvents={updateEvents} // No longer needed directly if fetchData is used
-              classes={classes}
-              assignments={assignments}
-              onDataChange={fetchData} // Pass fetchData
-            />
-          )}
-          {activeTab === 'timetable' && (
-            <Timetable
-              classes={classes}
-              // setClasses={updateClasses} // No longer needed directly if fetchData is used
-              onDataChange={fetchData} // Pass fetchData
-            />
-          )}
-          {activeTab === 'assignments' && (
-            <Assignments
-              assignments={assignments}
-              // setAssignments={updateAssignments} // No longer needed directly if fetchData is used
-              onDataChange={fetchData} // Pass fetchData
-            />
-          )}
+          <Routes>
+            <Route path="/" element={(
+              activeTab === 'dashboard' && (
+                <Dashboard
+                  assignments={assignments}
+                  classes={classes}
+                  events={events}
+                  isPremium={isPremium}
+                  onPremiumUpgrade={handlePremiumUpgrade}
+                  onAddAssignment={addAssignment}
+                  onAddClass={addClassSession}
+                  onAddEvent={addEvent}
+                  setActiveTab={setActiveTab}
+                />
+              )
+            )} />
+            <Route path="/calendar" element={(
+              activeTab === 'calendar' && (
+                <CalendarView
+                  events={events}
+                  classes={classes}
+                  assignments={assignments}
+                  onDataChange={fetchData}
+                />
+              )
+            )} />
+            <Route path="/timetable" element={(
+              activeTab === 'timetable' && (
+                <Timetable
+                  classes={classes}
+                  onDataChange={fetchData}
+                />
+              )
+            )} />
+            <Route path="/assignments" element={(
+              activeTab === 'assignments' && (
+                <Assignments
+                  assignments={assignments}
+                  onDataChange={fetchData}
+                />
+              )
+            )} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/features/search-filter" element={<div>Search & Filter Feature</div>} />
+            <Route path="/features/calendar-export" element={<div>Calendar Export Feature</div>} />
+            <Route path="/features/notifications" element={<div>Notifications Feature</div>} />
+            <Route path="/features/group-notes" element={<div>Group Notes Feature</div>} />
+            <Route path="/features/progress-analytics" element={<div>Progress Analytics Feature</div>} />
+            <Route path="/features/file-attachments" element={<div>File Attachments Feature</div>} />
+            <Route path="/features/reminders" element={<div>Reminders Feature</div>} />
+          </Routes>
         </main>
       </div>
     </div>
